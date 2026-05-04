@@ -69,15 +69,19 @@
     return s >= 200 && s < 400 ? 'req-ok' : 'req-err';
   }
 
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   function updateRow(entry) {
     var elapsed = entry.end ? (entry.end - entry.start) + 'ms' : '...';
     var statusText = entry.status || '...';
     entry._tr.innerHTML =
-      '<td>' + entry.id + '</td>' +
-      '<td>' + entry.method + '</td>' +
-      '<td>' + entry.url + '</td>' +
-      '<td class="' + statusClass(entry.status) + '">' + statusText + '</td>' +
-      '<td>' + elapsed + '</td>';
+      '<td>' + esc(entry.id) + '</td>' +
+      '<td>' + esc(entry.method) + '</td>' +
+      '<td>' + esc(entry.url) + '</td>' +
+      '<td class="' + statusClass(entry.status) + '">' + esc(statusText) + '</td>' +
+      '<td>' + esc(elapsed) + '</td>';
   }
 
   var counter = 0;
@@ -85,7 +89,7 @@
   // --- Intercept fetch ---
   var origFetch = window.fetch;
   window.fetch = function (input, init) {
-    var method = (init && init.method) ? init.method.toUpperCase() : 'GET';
+    var method = (init && init.method) ? init.method.toUpperCase() : (input && input.method ? input.method.toUpperCase() : 'GET');
     var url = (typeof input === 'string') ? input : (input && input.url ? input.url : String(input));
     var entry = { id: ++counter, method: method, url: url, status: null, start: Date.now(), end: null };
     addRow(entry);
